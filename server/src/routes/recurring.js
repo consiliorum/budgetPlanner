@@ -3,6 +3,38 @@ const pool = require('../db/pool');
 
 const router = Router();
 
+// Deviation report — templates where the latest real transaction differs from expected amount
+router.get('/deviations', async (req, res) => {
+  const { rows } = await pool.query(`
+    WITH latest_tx AS (
+      SELECT DISTINCT ON (description, category_id)
+        id, amount, date, description, category_id
+      FROM transactions
+      ORDER BY description, category_id, date DESC, id DESC
+    )
+    SELECT
+      r.id                                                        AS template_id,
+      r.description,
+      r.interval,
+      r.amount                                                    AS expected_amount,
+      c.name                                                      AS category_name,
+      c.color                                                     AS category_color,
+      l.id                                                        AS tx_id,
+      l.amount                                                    AS actual_amount,
+      l.date                                                      AS tx_date,
+      ROUND(((l.amount - r.amount) / NULLIF(r.amount, 0)) * 100, 1) AS deviation_pct
+    FROM recurring_templates r
+    LEFT JOIN categories c ON r.category_id = c.id
+    JOIN latest_tx l
+      ON l.description = r.description
+     AND l.category_id = r.category_id
+    WHERE r.active = true
+      AND ABS(l.amount - r.amount) > 0.01
+    ORDER BY ABS(l.amount - r.amount) DESC
+  `);
+  res.json(rows);
+});
+
 // List recurring templates
 router.get('/', async (req, res) => {
   const { rows } = await pool.query(

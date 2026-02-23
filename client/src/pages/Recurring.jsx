@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   getRecurring, createRecurring, updateRecurring,
-  deleteRecurring, processRecurring, getCategories,
+  deleteRecurring, processRecurring, getCategories, getDeviations,
 } from '../api/client';
 
 const fmt = (n) => Number(n).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -55,6 +55,7 @@ const IconProcess = () => (
 export default function Recurring() {
   const [templates, setTemplates] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [deviations, setDeviations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
@@ -65,9 +66,12 @@ export default function Recurring() {
   const load = async () => {
     try {
       setLoading(true);
-      const [tplData, catData] = await Promise.all([getRecurring(), getCategories()]);
+      const [tplData, catData, devData] = await Promise.all([
+        getRecurring(), getCategories(), getDeviations(),
+      ]);
       setTemplates(tplData);
       setCategories(catData);
+      setDeviations(devData);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -125,6 +129,8 @@ export default function Recurring() {
     catch (e) { setError(e.message); }
   };
 
+  const deviationMap = Object.fromEntries(deviations.map(d => [d.template_id, d]));
+
   const active  = templates.filter(t => t.active);
   const paused  = templates.filter(t => !t.active);
   const monthlyTotal = active
@@ -151,6 +157,31 @@ export default function Recurring() {
 
       {error   && <div className="error-msg">{error}</div>}
       {message && <div className="alert-success">{message}</div>}
+
+      {deviations.length > 0 && (
+        <div className="deviation-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '1px' }}>
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <strong>{deviations.length} subscription{deviations.length > 1 ? 's' : ''} deviate from expected amount</strong>
+            <div className="deviation-list">
+              {deviations.map(d => {
+                const diff = Number(d.actual_amount) - Number(d.expected_amount);
+                const sign = diff > 0 ? '+' : '';
+                return (
+                  <span key={d.template_id} className="deviation-item">
+                    <span className="deviation-name">{d.description}</span>
+                    <span className="deviation-delta">{sign}{fmt(diff)} ({sign}{d.deviation_pct}%)</span>
+                    <span className="deviation-date">last charged {new Date(d.tx_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="summary-cards" style={{ marginBottom: '1.25rem' }}>
@@ -211,9 +242,21 @@ export default function Recurring() {
             <tbody>
               {templates.map((tpl) => {
                 const iColors = intervalColors[tpl.interval] || { bg: '#f1f5f9', color: '#475569' };
+                const dev = deviationMap[tpl.id];
                 return (
                   <tr key={tpl.id} style={{ opacity: tpl.active ? 1 : 0.5 }}>
-                    <td><span className="tx-description">{tpl.description || <span style={{ color: '#94a3b8' }}>—</span>}</span></td>
+                    <td>
+                      <span className="tx-description">{tpl.description || <span style={{ color: '#94a3b8' }}>—</span>}</span>
+                      {dev && (
+                        <span className="deviation-row-badge" title={`Last charged ${fmt(dev.actual_amount)} — expected ${fmt(dev.expected_amount)}`}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                          </svg>
+                          {Number(dev.deviation_pct) > 0 ? '+' : ''}{dev.deviation_pct}%
+                        </span>
+                      )}
+                    </td>
                     <td>
                       {tpl.category_name && (
                         <span className="category-badge" style={{ background: tpl.category_color + '22', color: tpl.category_color, border: `1px solid ${tpl.category_color}44` }}>

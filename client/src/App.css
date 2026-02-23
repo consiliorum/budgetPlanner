@@ -585,6 +585,51 @@ tr:hover .row-actions { opacity: 1; }
 .toggle-label input:checked ~ .toggle-track { background: #2563eb; }
 .toggle-label input:checked ~ .toggle-track .toggle-thumb { left: 19px; }
 
+/* ── Deviation banner ───────────────────────────────────────── */
+.deviation-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+}
+.deviation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+.deviation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #78350f;
+}
+.deviation-name  { font-weight: 500; }
+.deviation-delta { font-weight: 600; color: #b45309; }
+.deviation-date  { color: #a78044; }
+.deviation-row-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: 0.45rem;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* ── Alert / success banner ─────────────────────────────────── */
 .alert-success {
   display: flex;

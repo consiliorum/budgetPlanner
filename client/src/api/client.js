@@ -62,6 +62,11 @@ export async function processRecurring() {
   return data;
 }
 
+export async function getDeviations() {
+  const { data } = await api.get('/recurring/deviations');
+  return data;
+}
+
 export async function previewCsv(file) {
   const form = new FormData();
   form.append('file', file);
