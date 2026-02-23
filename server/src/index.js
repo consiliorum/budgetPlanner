@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
 
 const transactionsRouter = require('./routes/transactions');
@@ -19,6 +20,11 @@ app.use('/api/recurring', recurringRouter);
 app.use('/api/import', importRouter);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Serve built React app
+const clientDist = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientDist));
+app.use((req, res) => res.sendFile(path.join(clientDist, 'index.html')));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

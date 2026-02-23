@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: '/api',
 });
 
 export async function getTransactions(params = {}) {
@@ -21,6 +21,11 @@ export async function updateTransaction(id, tx) {
 
 export async function deleteTransaction(id) {
   await api.delete(`/transactions/${id}`);
+}
+
+export async function deleteAllTransactions() {
+  const { data } = await api.delete('/transactions/all');
+  return data;
 }
 
 export async function getSummary(params = {}) {

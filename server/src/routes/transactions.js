@@ -146,6 +146,12 @@ router.put('/:id', async (req, res) => {
   res.json(rows[0]);
 });
 
+// Delete all
+router.delete('/all', async (req, res) => {
+  const { rowCount } = await pool.query('DELETE FROM transactions');
+  res.json({ deleted: rowCount });
+});
+
 // Delete
 router.delete('/:id', async (req, res) => {
   const { rowCount } = await pool.query('DELETE FROM transactions WHERE id=$1', [req.params.id]);
