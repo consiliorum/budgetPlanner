@@ -36,7 +36,7 @@ Supports German bank exports (Sparkasse, HVB, etc.):
 - German date formats: `DD.MM.YY`, `DD.MM.YYYY`
 - German amounts: `-4,86`, `-1.234,56`
 - `.CSV` and `.csv` file extensions
-- Auto-detects column mapping (`Betrag`, `Buchungstag`, `Verwendungszweck`, `Kategorie`, …)
+- Auto-detects column mapping 
 - Unknown categories are created automatically
 - Duplicate rows (same date + amount + description) are skipped
 
